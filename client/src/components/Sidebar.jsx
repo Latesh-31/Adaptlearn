@@ -1,4 +1,4 @@
-import { Home, BookOpen, Sparkles, Settings, User } from 'lucide-react';
+import { Home, BookOpen, Sparkles, Settings, User, MessageCircle } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '../lib/cn';
 
@@ -17,6 +17,11 @@ const navigationItems = [
     name: 'Course Demo',
     href: '/dashboard/demo',
     icon: Sparkles
+  },
+  {
+    name: 'AI Study Buddy',
+    href: '/dashboard/study-buddy',
+    icon: MessageCircle
   },
   {
     name: 'AI Tools',
