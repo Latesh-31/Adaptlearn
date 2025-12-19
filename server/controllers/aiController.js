@@ -1,47 +1,26 @@
-const { z } = require('zod');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-const { ApiError } = require('../utils/ApiError');
-const { asyncHandler } = require('../utils/asyncHandler');
 
 // Initialize Google Generative AI
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
-const chatSchema = z.object({
-  prompt: z.string().min(1).max(4000),
-  history: z.array(z.object({
-    role: z.enum(['user', 'model']),
-    parts: z.array(z.object({
-      text: z.string()
-    }))
-  })).optional().default([])
-}).strict();
-
-const chat = asyncHandler(async (req, res) => {
-  // Validate input
-  const parsed = chatSchema.safeParse(req.body);
-  if (!parsed.success) {
-    throw new ApiError({
-      status: 400,
-      code: 'VALIDATION_001',
-      message: 'Invalid input',
-      details: parsed.error.flatten(),
-    });
-  }
-
-  const { prompt, history } = parsed.data;
-
-  // Check if API key exists
-  if (!process.env.GEMINI_API_KEY) {
-    throw new ApiError({
-      status: 500,
-      code: 'CONFIG_001',
-      message: 'AI service is not configured',
-    });
-  }
-
+const chat = async (req, res) => {
   try {
-    // Get the generative model with system instruction
-    const model = genAI.getGenerativeModel({
+    const { prompt, history } = req.body;
+
+    // 1. Log Request received
+    console.log('Request received:', prompt);
+
+    // 2. Log Calling Gemini API
+    // Log API key presence (do NOT log the key itself)
+    console.log('Calling Gemini API. Key present:', !!process.env.GEMINI_API_KEY);
+
+    if (!process.env.GEMINI_API_KEY) {
+      throw new Error('GEMINI_API_KEY is not defined in environment variables');
+    }
+
+    // Use model: "gemini-1.5-flash"
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-1.5-flash",
       systemInstruction: `You are a Helpful Tutor for AdaptLearn AI. Your role is to:
 
 1. Explain complex concepts in simple, easy-to-understand terms
@@ -58,62 +37,30 @@ Always structure your responses clearly with:
 - A real-world example or analogy when helpful
 - A follow-up question to encourage further learning
 
-Keep responses concise but comprehensive.`,
+Keep responses concise but comprehensive.`
     });
 
-    // Start a chat session with history
-    const chat = model.startChat({
+    const chatSession = model.startChat({
       history: history || [],
     });
 
-    // Send message and get response
-    const result = await chat.sendMessage(prompt);
+    const result = await chatSession.sendMessage(prompt);
     const response = result.response;
     const text = response.text();
 
-    // Return structured response
-    res.status(200).json({
-      data: {
-        message: text,
-        timestamp: new Date().toISOString(),
-      }
-    });
+    // 3. Response received (log the first 20 chars of the output)
+    console.log('Response received:', text.substring(0, 20));
+
+    // Return success response with reply
+    res.status(200).json({ reply: text });
 
   } catch (error) {
-    console.error('AI Chat Error:', error);
-    
-    // Handle specific API errors
-    if (error.message?.includes('API_KEY_INVALID')) {
-      throw new ApiError({
-        status: 500,
-        code: 'AI_002',
-        message: 'AI service configuration error',
-      });
-    }
-
-    if (error.message?.includes('QUOTA_EXCEEDED')) {
-      throw new ApiError({
-        status: 503,
-        code: 'AI_003',
-        message: 'AI service is temporarily overloaded. Please try again later.',
-      });
-    }
-
-    if (error.message?.includes('SAFETY')) {
-      throw new ApiError({
-        status: 400,
-        code: 'AI_004',
-        message: 'Your question could not be processed. Please try rephrasing it.',
-      });
-    }
-
-    // Generic error
-    throw new ApiError({
-      status: 500,
-      code: 'AI_001',
-      message: 'AI service is temporarily unavailable. Please try again later.',
+    console.error('AI Integration Error:', error);
+    // Return a 500 status with the specific error message
+    res.status(500).json({ 
+      error: error.message || 'An unexpected error occurred processing the AI request' 
     });
   }
-});
+};
 
 module.exports = { chat };

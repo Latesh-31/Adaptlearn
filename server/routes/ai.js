@@ -1,10 +1,12 @@
 const express = require('express');
 const { chat } = require('../controllers/aiController');
-const { verifyAccessToken } = require('../utils/jwt');
+// const { verifyAccessToken } = require('../utils/jwt');
 
 const router = express.Router();
 
-// All AI routes require authentication
-router.post('/chat', verifyAccessToken, chat);
+// Define the POST route /chat
+// Authentication middleware temporarily removed for testing as requested
+// router.post('/chat', verifyAccessToken, chat);
+router.post('/chat', chat);
 
 module.exports = router;
