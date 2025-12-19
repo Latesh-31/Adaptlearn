@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  font-feature-settings: "ss01" 1, "ss02" 1, "cv01" 1;
+}
+
+body {
+  @apply font-sans tracking-tight text-gray-900 bg-white;
+}
