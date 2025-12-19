@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import DashboardLayout from './layouts/DashboardLayout';
+import StudyBuddy from './components/ai/StudyBuddy';
 
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -14,6 +15,21 @@ const AITools = () => (
     <p className="text-gray-600">AI-powered learning tools coming soon...</p>
   </div>
 );
+
+// Study Buddy Page
+const StudyBuddyPage = () => {
+  return (
+    <div className="h-full">
+      <div className="max-w-4xl mx-auto p-6 h-full">
+        <div className="mb-6">
+          <h1 className="text-2xl font-semibold text-gray-900">AI Study Buddy</h1>
+          <p className="text-gray-600 mt-1">Get help with your studies from our AI tutor</p>
+        </div>
+        <StudyBuddy className="h-[calc(100vh-200px)]" />
+      </div>
+    </div>
+  );
+};
 
 const Settings = () => (
   <div className="p-6">
@@ -57,6 +73,7 @@ export default function App() {
         <Route index element={<DashboardHome />} />
         <Route path="courses" element={<DashboardCourses />} />
         <Route path="demo" element={<CourseDemo />} />
+        <Route path="study-buddy" element={<StudyBuddyPage />} />
         <Route path="tools" element={<AITools />} />
         <Route path="settings" element={<Settings />} />
       </Route>
