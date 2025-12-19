@@ -66,25 +66,26 @@ const StudyBuddy = ({ className }) => {
         credentials: 'include',
         body: JSON.stringify({
           prompt: userMessage.text,
-          history: history.slice(0, -1), // Exclude the current message
+          history: history,
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error?.message || 'Failed to get AI response');
+        throw new Error(data.error || 'Failed to get AI response');
       }
 
       const aiMessage = {
         id: (Date.now() + 1).toString(),
         role: 'model',
-        text: data.data.message,
-        timestamp: data.data.timestamp || new Date().toISOString(),
+        text: data.reply,
+        timestamp: new Date().toISOString(),
       };
 
       setMessages(prev => [...prev, aiMessage]);
     } catch (err) {
+      console.log('Frontend AI Error:', err);
       console.error('AI Chat Error:', err);
       setError(err.message || 'Something went wrong. Please try again.');
       
