@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+}
+
+@layer utilities {
+  .border-px {
+    border-width: 1px;
+  }
+}
+
+:root {
+  --background: #09090b;
+  --foreground: #fafafa;
+  --border: #27272a;
+}
